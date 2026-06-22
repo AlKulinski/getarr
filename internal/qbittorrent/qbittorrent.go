@@ -127,6 +127,11 @@ func (c *Client) AddURL(link string) error {
 		b, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("qbittorrent add failed: %d %s", resp.StatusCode, string(b))
 	}
+	b, _ := io.ReadAll(resp.Body)
+	body := strings.TrimSpace(string(b))
+	if body != "" && body != "Ok." {
+		return fmt.Errorf("qbittorrent add failed: %s", body)
+	}
 	return nil
 }
 

@@ -279,18 +279,21 @@ func (o *Orchestrator) addViaProwlarr(cfg config.App, info *metadata.Info, req *
 	if err != nil {
 		return fmt.Errorf("prowlarr search: %w", err)
 	}
-	var link string
+	var best arr.Release
 	for _, r := range releases {
-		link = r.MagnetURL
-		if link == "" {
-			link = r.DownloadURL
+		if r.MagnetURL == "" && r.DownloadURL == "" {
+			continue
 		}
-		if link != "" {
-			break
+		if best.Title == "" || r.Seeders > best.Seeders {
+			best = r
 		}
 	}
-	if link == "" {
+	if best.Title == "" {
 		return fmt.Errorf("no release found")
+	}
+	link := best.MagnetURL
+	if link == "" {
+		link = best.DownloadURL
 	}
 	q := o.qbitClient()
 	if q == nil {
@@ -299,7 +302,7 @@ func (o *Orchestrator) addViaProwlarr(cfg config.App, info *metadata.Info, req *
 	if err := q.AddURL(link); err != nil {
 		return fmt.Errorf("qbittorrent add: %w", err)
 	}
-	o.setStatus(req, store.StatusAdded, "Sent release to qBittorrent")
+	o.setStatus(req, store.StatusAdded, fmt.Sprintf("Sent release to qBittorrent: %s", best.Title))
 	return nil
 }
 
