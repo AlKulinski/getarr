@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -20,7 +21,12 @@ func doJSON(method, base, path, key string, body, out any) error {
 	if err != nil {
 		return err
 	}
-	u.Path = path
+	if idx := strings.Index(path, "?"); idx >= 0 {
+		u.Path = path[:idx]
+		u.RawQuery = path[idx+1:]
+	} else {
+		u.Path = path
+	}
 
 	var bodyReader io.Reader
 	if body != nil {
