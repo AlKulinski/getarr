@@ -62,9 +62,11 @@ func FromURL(raw string, opts Options) (*Info, error) {
 		u.Scheme = "https"
 	}
 
-	info := &Info{Source: u.Host, Type: TypeUnknown}
-	if strings.Contains(u.Host, "imdb.com") {
-		info.Source = "imdb"
+	source := detectSource(u)
+	info := &Info{Source: source, Type: TypeUnknown}
+
+	switch source {
+	case "imdb":
 		info.ImdbID = extractImdbID(u.Path)
 		if err := imdbMetadata(info, opts); err != nil {
 			return nil, err
@@ -77,19 +79,31 @@ func FromURL(raw string, opts Options) (*Info, error) {
 			}
 			info.ImdbID = extractImdbID(u.Path)
 		}
-		return info, nil
-	}
-
-	if strings.Contains(u.Host, "rottentomatoes.com") {
-		info.Source = "rottentomatoes"
+	case "rottentomatoes":
 		if err := rottentomatoesMetadata(info, u); err != nil {
 			guessFromPath(u, info)
 		}
-		return info, nil
+	default:
+		guessFromPath(u, info)
 	}
 
-	guessFromPath(u, info)
 	return info, nil
+}
+
+func detectSource(u *url.URL) string {
+	if strings.Contains(u.Host, "imdb.com") {
+		return "imdb"
+	}
+	if imdbIDRe.MatchString(u.Path) || (strings.HasPrefix(u.Path, "/title/") && strings.Contains(u.Path, "/episodes")) {
+		return "imdb"
+	}
+	if strings.Contains(u.Host, "rottentomatoes.com") {
+		return "rottentomatoes"
+	}
+	if strings.HasPrefix(u.Path, "/m/") || strings.HasPrefix(u.Path, "/tv/") {
+		return "rottentomatoes"
+	}
+	return u.Host
 }
 
 func imdbMetadata(info *Info, opts Options) error {
