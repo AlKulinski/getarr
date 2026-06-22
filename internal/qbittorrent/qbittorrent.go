@@ -51,10 +51,22 @@ func (c *Client) login() error {
 	if c.User == "" && c.Pass == "" {
 		return nil
 	}
+	// Clear any stale session cookies before logging in.
+	jar, _ := cookiejar.New(nil)
+	c.client.Jar = jar
+
 	data := url.Values{}
 	data.Set("username", c.User)
 	data.Set("password", c.Pass)
-	resp, err := c.client.PostForm(c.BaseURL+"/api/v2/auth/login", data)
+	req, err := http.NewRequest("POST", c.BaseURL+"/api/v2/auth/login", strings.NewReader(data.Encode()))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", "Mozilla/5.0")
+	req.Header.Set("Referer", c.BaseURL)
+
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return err
 	}
