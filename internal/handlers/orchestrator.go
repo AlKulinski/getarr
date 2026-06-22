@@ -157,10 +157,19 @@ func (o *Orchestrator) addSeries(cfg config.App, info *metadata.Info, req *store
 		if err != nil {
 			return fmt.Errorf("sonarr add: %w", err)
 		}
-		if err := s.Command("SeriesSearch", map[string]any{"seriesId": seriesID}); err != nil {
-			return fmt.Errorf("sonarr search: %w", err)
+		// Search each season individually so Sonarr prefers season packs over single episodes.
+		seasons, _ := series["seasons"].([]any)
+		for _, se := range seasons {
+			sm, _ := se.(map[string]any)
+			sn, _ := sm["seasonNumber"].(float64)
+			if sn == 0 {
+				continue
+			}
+			if err := s.Command("SeasonSearch", map[string]any{"seriesId": seriesID, "seasonNumber": int(sn)}); err != nil {
+				return fmt.Errorf("sonarr season %d search: %w", int(sn), err)
+			}
 		}
-		o.setStatus(req, store.StatusSearching, "Added series to Sonarr and started search")
+		o.setStatus(req, store.StatusSearching, "Added series to Sonarr and started season searches")
 		return nil
 	}
 	return o.addViaProwlarr(cfg, info, req, []int{5000})
