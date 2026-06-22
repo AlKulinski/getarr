@@ -13,6 +13,7 @@ import (
 	"github.com/aleksander/getarr/internal/qbittorrent"
 	"github.com/aleksander/getarr/internal/store"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 //go:embed templates/* static/*
@@ -60,6 +61,8 @@ func New(cfg *config.Store, st *store.Store) (*Handlers, error) {
 
 func (h *Handlers) Routes() http.Handler {
 	r := chi.NewRouter()
+	r.Use(middleware.StripSlashes)
+
 	r.Get("/", h.index)
 	r.Post("/config", h.postConfig)
 	r.Get("/api/queue", h.queue)
@@ -67,15 +70,11 @@ func (h *Handlers) Routes() http.Handler {
 
 	// IMDb routes
 	r.Get("/title/{id}", h.imdbTitle)
-	r.Get("/title/{id}/", h.imdbTitle)
 	r.Get("/title/{id}/episodes", h.imdbEpisodes)
-	r.Get("/title/{id}/episodes/", h.imdbEpisodes)
 
 	// Rotten Tomatoes routes
 	r.Get("/m/{slug}", h.rtMovie)
-	r.Get("/m/{slug}/", h.rtMovie)
 	r.Get("/tv/{slug}", h.rtSeries)
-	r.Get("/tv/{slug}/", h.rtSeries)
 
 	staticFS, err := fs.Sub(webFS, "static")
 	if err != nil {
