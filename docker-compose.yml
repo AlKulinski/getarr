@@ -1,0 +1,18 @@
+services:
+  getarr:
+    build: .
+    container_name: getarr
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      - TZ=Europe/Oslo
+    networks:
+      - arr
+
+networks:
+  arr:
+    name: arr
+    driver: bridge

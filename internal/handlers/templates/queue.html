@@ -1,0 +1,47 @@
+{{define "queue"}}
+<div class="queue">
+  {{range .Errors}}
+  <p class="queue-error">{{.}}</p>
+  {{end}}
+
+  {{if .Torrents}}
+  <h3>qBittorrent</h3>
+  {{range .Torrents}}
+  <div class="torrent">
+    <div class="torrent-meta">
+      <strong>{{.Name}}</strong>
+      <span class="state {{.State}}">{{.State}}</span>
+      <span>{{.ProgressPct}} — {{humanSize .Downloaded}} / {{humanSize .Size}} — ↓ {{humanSize .DownloadSpeed}}/s — ETA {{eta .ETA}}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width: {{.ProgressPct}}"></div></div>
+  </div>
+  {{end}}
+  {{end}}
+
+  {{if .Sonarr}}
+  <h3>Sonarr</h3>
+  {{range .Sonarr}}
+  <div class="queue-item">
+    <strong>{{index . "title"}}</strong>
+    <span>{{index . "status"}} / {{index . "trackedDownloadState"}}</span>
+    <span>{{humanNumber (index . "sizeleft")}} left of {{humanNumber (index . "size")}}</span>
+  </div>
+  {{end}}
+  {{end}}
+
+  {{if .Radarr}}
+  <h3>Radarr</h3>
+  {{range .Radarr}}
+  <div class="queue-item">
+    <strong>{{index . "title"}}</strong>
+    <span>{{index . "status"}} / {{index . "trackedDownloadState"}}</span>
+    <span>{{humanNumber (index . "sizeleft")}} left of {{humanNumber (index . "size")}}</span>
+  </div>
+  {{end}}
+  {{end}}
+
+  {{if and (not .Torrents) (not .Sonarr) (not .Radarr)}}
+  <p class="muted">No active downloads.</p>
+  {{end}}
+</div>
+{{end}}

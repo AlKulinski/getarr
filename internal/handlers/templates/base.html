@@ -1,0 +1,139 @@
+{{define "base"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>getarr</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1LY2odK+6RBw99fStk4mt7Gw7mzpcI6v3tQU3hDE1cVja1ZmW8lVBxD4GVMaJ" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <h1>getarr</h1>
+    <p>Prefix any IMDb or Rotten Tomatoes URL with <code>dl.</code> to start a download.</p>
+  </header>
+  <main>
+    {{template "content" .}}
+  </main>
+</body>
+</html>{{end}}
+
+{{define "content"}}
+<section class="card">
+  <h2>Configuration</h2>
+  <div id="config-status"></div>
+  <form hx-post="/config" hx-target="#config-status" hx-swap="innerHTML">
+    <fieldset>
+      <legend>App</legend>
+      <label>Listen address
+        <input type="text" name="listenAddr" value="{{.Config.ListenAddr}}" placeholder=":8080">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Sonarr (TV)</legend>
+      <label>URL
+        <input type="url" name="sonarrUrl" value="{{.Config.SonarrURL}}" placeholder="http://sonarr:8989">
+      </label>
+      <label>API key
+        <input type="password" name="sonarrKey" value="{{.Config.SonarrKey}}">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Radarr (Movies)</legend>
+      <label>URL
+        <input type="url" name="radarrUrl" value="{{.Config.RadarrURL}}" placeholder="http://radarr:7878">
+      </label>
+      <label>API key
+        <input type="password" name="radarrKey" value="{{.Config.RadarrKey}}">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Metadata</legend>
+      <label>OMDb API key (optional, improves IMDb episode detection)
+        <input type="text" name="omdbKey" value="{{.Config.OMDbKey}}" placeholder="xxxxxxxx">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Prowlarr (fallback)</legend>
+      <label>URL
+        <input type="url" name="prowlarrUrl" value="{{.Config.ProwlarrURL}}" placeholder="http://prowlarr:9696">
+      </label>
+      <label>API key
+        <input type="password" name="prowlarrKey" value="{{.Config.ProwlarrKey}}">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>qBittorrent (live progress)</legend>
+      <label>URL
+        <input type="url" name="qbittorrentUrl" value="{{.Config.QBittorrentURL}}" placeholder="http://qbittorrent:8080">
+      </label>
+      <label>Username
+        <input type="text" name="qbittorrentUser" value="{{.Config.QBittorrentUser}}">
+      </label>
+      <label>Password
+        <input type="password" name="qbittorrentPass" value="{{.Config.QBittorrentPass}}">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Defaults</legend>
+      <label>Quality profile
+        <input type="text" name="defaultQualityProfile" value="{{.Config.DefaultQualityProfile}}" placeholder="Any">
+      </label>
+      <label>Root folder path
+        <input type="text" name="rootFolderPath" value="{{.Config.RootFolderPath}}" placeholder="/data/media">
+      </label>
+      <label>Series monitor mode
+        <select name="seriesMonitor">
+          <option value="all" {{if eq .Config.SeriesMonitor "all"}}selected{{end}}>All episodes</option>
+          <option value="future" {{if eq .Config.SeriesMonitor "future"}}selected{{end}}>Future episodes</option>
+          <option value="missing" {{if eq .Config.SeriesMonitor "missing"}}selected{{end}}>Missing episodes</option>
+          <option value="existing" {{if eq .Config.SeriesMonitor "existing"}}selected{{end}}>Existing episodes</option>
+          <option value="firstSeason" {{if eq .Config.SeriesMonitor "firstSeason"}}selected{{end}}>First season</option>
+          <option value="lastSeason" {{if eq .Config.SeriesMonitor "lastSeason"}}selected{{end}}>Last season</option>
+          <option value="none" {{if eq .Config.SeriesMonitor "none"}}selected{{end}}>None</option>
+        </select>
+      </label>
+      <label>Subtitle languages
+        <input type="text" name="subtitleLanguages" value="{{.Config.SubtitleLanguages}}" placeholder="en,nb">
+      </label>
+      <label>Preferred format / notes
+        <input type="text" name="preferredFormat" value="{{.Config.PreferredFormat}}" placeholder="x265, 1080p">
+      </label>
+      <label>Tags
+        <input type="text" name="tags" value="{{.Config.Tags}}" placeholder="comma separated">
+      </label>
+    </fieldset>
+
+    <button type="submit">Save configuration</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Manual download</h2>
+  <form hx-post="/api/download" hx-target="#download-result" hx-swap="innerHTML">
+    <input type="url" name="url" placeholder="https://www.imdb.com/title/tt0137523/" required>
+    <button type="submit">Download</button>
+  </form>
+  <div id="download-result">
+    {{if .Result}}{{template "download-result" .Result}}{{end}}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Live queue <span class="live">●</span></h2>
+  <div hx-get="/api/queue" hx-trigger="load, every 3s" hx-swap="innerHTML">
+    {{template "queue" .Queue}}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Recent requests</h2>
+  {{template "history" .Requests}}
+</section>
+{{end}}

@@ -1,0 +1,22 @@
+{{define "history"}}
+{{if .}}
+<table class="history">
+  <thead>
+    <tr><th>Time</th><th>Type</th><th>Title</th><th>Status</th><th>Message</th></tr>
+  </thead>
+  <tbody>
+    {{range .}}
+    <tr class="{{statusClass .Status}}">
+      <td>{{.CreatedAt.Format "15:04:05"}}</td>
+      <td>{{.Type}}</td>
+      <td>{{.Title}}</td>
+      <td>{{.Status}}</td>
+      <td>{{.Message}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+{{else}}
+<p class="muted">No requests yet.</p>
+{{end}}
+{{end}}
