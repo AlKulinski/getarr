@@ -67,11 +67,15 @@ func (h *Handlers) Routes() http.Handler {
 
 	// IMDb routes
 	r.Get("/title/{id}", h.imdbTitle)
+	r.Get("/title/{id}/", h.imdbTitle)
 	r.Get("/title/{id}/episodes", h.imdbEpisodes)
+	r.Get("/title/{id}/episodes/", h.imdbEpisodes)
 
 	// Rotten Tomatoes routes
 	r.Get("/m/{slug}", h.rtMovie)
+	r.Get("/m/{slug}/", h.rtMovie)
 	r.Get("/tv/{slug}", h.rtSeries)
+	r.Get("/tv/{slug}/", h.rtSeries)
 
 	staticFS, err := fs.Sub(webFS, "static")
 	if err != nil {
