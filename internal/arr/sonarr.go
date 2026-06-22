@@ -37,14 +37,14 @@ func (s *Sonarr) Lookup(imdbID, title string, year int) (map[string]any, error) 
 	return out[0], nil
 }
 
-func (s *Sonarr) Add(series map[string]any, profileID int, rootFolder, monitor string, tags []string) (int, error) {
+func (s *Sonarr) Add(series map[string]any, profileID int, rootFolder, monitor string, search bool, tags []string) (int, error) {
 	series["qualityProfileId"] = profileID
 	series["rootFolderPath"] = rootFolder
 	series["monitored"] = true
 	series["seasonFolder"] = true
 	series["addOptions"] = map[string]any{
-		"monitor":                 monitor,
-		"searchForMissingEpisodes": false,
+		"monitor":                  monitor,
+		"searchForMissingEpisodes": search,
 	}
 	if len(tags) > 0 {
 		series["tags"] = tags

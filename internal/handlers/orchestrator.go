@@ -153,7 +153,7 @@ func (o *Orchestrator) addSeries(cfg config.App, info *metadata.Info, req *store
 		if monitor == "" {
 			monitor = "all"
 		}
-		seriesID, err := s.Add(series, pid, cfg.RootFolderPath, monitor, nil)
+		seriesID, err := s.Add(series, pid, cfg.RootFolderPath, monitor, true, nil)
 		if err != nil {
 			return fmt.Errorf("sonarr add: %w", err)
 		}
@@ -181,7 +181,7 @@ func (o *Orchestrator) addSeason(cfg config.App, info *metadata.Info, req *store
 			return fmt.Errorf("sonarr lookup: %w", err)
 		}
 		pid := sonarrFirst(profiles, cfg.DefaultQualityProfile)
-		seriesID, err := s.Add(series, pid, cfg.RootFolderPath, "none", nil)
+		seriesID, err := s.Add(series, pid, cfg.RootFolderPath, "none", false, nil)
 		if err != nil {
 			return fmt.Errorf("sonarr add: %w", err)
 		}
@@ -219,7 +219,7 @@ func (o *Orchestrator) addEpisode(cfg config.App, info *metadata.Info, req *stor
 			return fmt.Errorf("sonarr lookup: %w", err)
 		}
 		pid := sonarrFirst(profiles, cfg.DefaultQualityProfile)
-		seriesID, err := s.Add(series, pid, cfg.RootFolderPath, "none", nil)
+		seriesID, err := s.Add(series, pid, cfg.RootFolderPath, "none", false, nil)
 		if err != nil {
 			return fmt.Errorf("sonarr add: %w", err)
 		}
